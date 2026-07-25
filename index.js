@@ -16,6 +16,15 @@ function logMessage(msg) {
   if (serverLogs.length > 50) serverLogs.pop();
 }
 
+// Genel çökme koruması (Uygulamanın 502 vermesini engeller)
+process.on('uncaughtException', (err) => {
+  logMessage(`[Kritik Hata]: ${err.message}`);
+});
+
+process.on('unhandledRejection', (reason) => {
+  logMessage(`[Yakalanamayan Red]: ${reason}`);
+});
+
 // --- WEB KONTROL PANELİ ARAYÜZÜ ---
 app.get('/', (req, res) => {
   res.send(`
@@ -59,7 +68,7 @@ app.get('/', (req, res) => {
             <input type="text" name="version" value="1.20.4" required>
           </div>
           <div class="form-group">
-            <label>Bot Sayısı (Sınır Yok):</label>
+            <label>Bot Sayısı:</label>
             <input type="number" name="count" value="5" min="1" required>
           </div>
           <button type="submit">Botları Başlat</button>
@@ -108,30 +117,34 @@ app.post('/start', (req, res) => {
 
   for (let i = 0; i < botCount; i++) {
     setTimeout(() => {
-      const botName = 'Bot_' + Math.floor(Math.random() * 9000 + 1000);
-      
-      const bot = mineflayer.createBot({
-        host: host,
-        port: parseInt(port),
-        version: version,
-        username: botName,
-        auth: 'offline'
-      });
+      try {
+        const botName = 'Bot_' + Math.floor(Math.random() * 9000 + 1000);
+        
+        const bot = mineflayer.createBot({
+          host: host,
+          port: parseInt(port),
+          version: version,
+          username: botName,
+          auth: 'offline'
+        });
 
-      bot.on('spawn', () => {
-        logMessage(`[Girdi] ${botName} oyuna katıldı.`);
-      });
+        bot.on('spawn', () => {
+          logMessage(`[Girdi] ${botName} oyuna katıldı.`);
+        });
 
-      bot.on('end', (reason) => {
-        logMessage(`[Koptu] ${botName} ayrıldı: ${reason}`);
-      });
+        bot.on('end', (reason) => {
+          logMessage(`[Koptu] ${botName} ayrıldı: ${reason}`);
+        });
 
-      bot.on('error', (err) => {
-        logMessage(`[Hata] ${botName}: ${err.message}`);
-      });
+        bot.on('error', (err) => {
+          logMessage(`[Hata] ${botName}: ${err.message}`);
+        });
 
-      activeBots.push(bot);
-    }, i * 2000); // Çoklu gönderimlerde yığılmayı önlemek için aralarına 2 saniye koyar
+        activeBots.push(bot);
+      } catch (e) {
+        logMessage(`[Bot Oluşturma Hatası]: ${e.message}`);
+      }
+    }, i * 2000);
   }
 
   res.redirect('/');
