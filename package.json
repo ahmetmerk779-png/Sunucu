@@ -1,12 +1,12 @@
 {
-  "name": "mc-llm-bot",
+  "name": "mc-bot-control-panel",
   "version": "1.0.0",
-  "description": "Cloud-hosted Minecraft LLM Bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
+    "express": "^4.19.2",
     "mineflayer": "^4.20.0"
   },
   "engines": {
