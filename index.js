@@ -83,8 +83,16 @@ app.get('/', (req, res) => {
         </div>
       </div>
       <script>
-        // Logların canlı akması için sayfayı her 3 saniyede bir yeniler
-        setTimeout(() => { location.reload(); }, 3000);
+        // Kullanıcı bir kutuya yazı yazarken sayfanın yenilenmesini engeller
+        setInterval(() => {
+          const activeElement = document.activeElement;
+          const isTyping = activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA');
+          
+          // Eğer şu an yazı yazılmıyorsa logların güncel kalması için sayfayı yenile
+          if (!isTyping) {
+            location.reload();
+          }
+        }, 4000);
       </script>
     </body>
     </html>
@@ -95,7 +103,6 @@ app.get('/', (req, res) => {
 app.post('/start', (req, res) => {
   const { host, port, version, count } = req.body;
   
-  // Eski botlar varsa oyundan çıkar
   activeBots.forEach(b => { try { b.quit(); } catch(e){} });
   activeBots = [];
 
@@ -108,7 +115,7 @@ app.post('/start', (req, res) => {
       const bot = mineflayer.createBot({
         host: host,
         port: parseInt(port),
-        version: version, // Sürüm hatasını önlemek için panelden gelen değer verilir
+        version: version,
         username: botName,
         auth: 'offline'
       });
@@ -126,7 +133,7 @@ app.post('/start', (req, res) => {
       });
 
       activeBots.push(bot);
-    }, i * 3000); // 3 saniye arayla girerler (Anti-cheat korumasına takılmamak için)
+    }, i * 3000);
   }
 
   res.redirect('/');
