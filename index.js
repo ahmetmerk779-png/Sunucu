@@ -59,8 +59,8 @@ app.get('/', (req, res) => {
             <input type="text" name="version" value="1.20.4" required>
           </div>
           <div class="form-group">
-            <label>Bot Sayısı:</label>
-            <input type="number" name="count" value="3" min="1" max="20" required>
+            <label>Bot Sayısı (Sınır Yok):</label>
+            <input type="number" name="count" value="5" min="1" required>
           </div>
           <button type="submit">Botları Başlat</button>
         </form>
@@ -83,12 +83,9 @@ app.get('/', (req, res) => {
         </div>
       </div>
       <script>
-        // Kullanıcı bir kutuya yazı yazarken sayfanın yenilenmesini engeller
         setInterval(() => {
           const activeElement = document.activeElement;
           const isTyping = activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA');
-          
-          // Eğer şu an yazı yazılmıyorsa logların güncel kalması için sayfayı yenile
           if (!isTyping) {
             location.reload();
           }
@@ -106,9 +103,10 @@ app.post('/start', (req, res) => {
   activeBots.forEach(b => { try { b.quit(); } catch(e){} });
   activeBots = [];
 
-  logMessage(`[Sistem] ${count} adet bot "${host}:${port}" adresine (${version}) gönderiliyor...`);
+  const botCount = parseInt(count);
+  logMessage(`[Sistem] ${botCount} adet bot "${host}:${port}" adresine (${version}) gönderiliyor...`);
 
-  for (let i = 0; i < parseInt(count); i++) {
+  for (let i = 0; i < botCount; i++) {
     setTimeout(() => {
       const botName = 'Bot_' + Math.floor(Math.random() * 9000 + 1000);
       
@@ -133,7 +131,7 @@ app.post('/start', (req, res) => {
       });
 
       activeBots.push(bot);
-    }, i * 3000);
+    }, i * 2000); // Çoklu gönderimlerde yığılmayı önlemek için aralarına 2 saniye koyar
   }
 
   res.redirect('/');
